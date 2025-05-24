@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <title>پنل WireGuard matiWG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { background: #10141c; color: #eee; font-family: sans-serif; margin: 0; padding: 2rem; }
+    .container { max-width: 700px; margin: auto; background: #1c2331; padding: 2rem; border-radius: 1rem; box-shadow: 0 0 30px rgba(0,255,200,0.2); }
+    h1 { color: #00ffc8; text-align: center; }
+    label { display: block; margin-top: 1rem; font-weight: bold; }
+    input, select, button, textarea {
+      width: 100%; padding: 0.75rem; margin-top: 0.5rem; border-radius: 0.5rem;
+      background: #2c354a; border: none; color: #eee; font-size: 1rem;
+    }
+    button { background: #00ffc8; color: #000; font-weight: bold; cursor: pointer; }
+    button:hover { background: #00e0b2; }
+    textarea { height: 200px; background: #1a1f2e; color: #0f0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>matiWG | ساخت کانفیگ WireGuard</h1>
+    <label>نام کانفیگ:</label>
+    <input id="name" placeholder="مثلاً gamevpn" />
+
+    <label>سرور:</label>
+    <select id="server">
+      <option value="ger">آلمان (Hetzner)</option>
+      <option value="sg">سنگاپور (Fly.io)</option>
+      <option value="us">آمریکا (OVH)</option>
+    </select>
+
+    <button onclick="generate()">تولید کانفیگ</button>
+    <button onclick="download()">دانلود فایل .conf</button>
+
+    <label>کانفیگ نهایی:</label>
+    <textarea id="result" readonly></textarea>
+  </div>
+
+  <script>
+    function generate() {
+      const name = document.getElementById("name").value || "matiwg";
+      const server = document.getElementById("server").value;
+
+      const privateKey = "x4vs8MopMT+l9O1FYeE4SyVuIA8ztHdxN4PZ+LEvR1s=";
+      const publicKey = "3ThGR0FAGnJGMFx0FwO0YXDrMNcXnYzK3nX2u1BxjV0=";
+
+      let endpoint = "176.9.41.242:51820"; // Germany default
+      if (server === "sg") endpoint = "sgcf.fly.dev:51820";
+      if (server === "us") endpoint = "38.68.134.124:51820";
+
+      const config = `[Interface]
+PrivateKey = ${privateKey}
+Address = 10.8.0.2/24
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey = ${publicKey}
+Endpoint = ${endpoint}
+AllowedIPs = 0.0.0.0/0, ::/0`;
+
+      document.getElementById("result").value = config;
+      localStorage.setItem("confData", config);
+    }
+
+    function download() {
+      const config = localStorage.getItem("confData");
+      const name = document.getElementById("name").value || "matiwg";
+      const filename = name.endsWith(".conf") ? name : name + ".conf";
+
+      const blob = new Blob([config], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.setAttribute("download", filename);
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  </script>
+</body>
+</html>
